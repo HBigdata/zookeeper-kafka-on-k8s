@@ -1,9 +1,9 @@
 ## 一、概述
 - `Apache ZooKeeper` 是一个集中式服务，用于维护配置信息、命名、提供分布式同步和提供组服务，ZooKeeper 致力于开发和维护一个开源服务器，以实现高度可靠的**分布式协调**，其实也可以认为就是一个**分布式数据库**，只是结构比较特殊，是树状结构。官网文档：[https://zookeeper.apache.org/doc/r3.8.0/](https://zookeeper.apache.org/doc/r3.8.0/)
-，关于Zookeeper的介绍，也可以参考我之前的文章：[分布式开源协调服务——Zookeeper](https://www.cnblogs.com/liugp/p/16315924.html)
+，关于Zookeeper的介绍，也可以参考我之前的文章：[分布式开源协调服务——Zookeeper](https://mp.weixin.qq.com/s?__biz=MzI3MDM5NjgwNg==&mid=2247484760&idx=1&sn=7cdafafb3a7962126b956e52252e5a34&chksm=ead0f9b1dda770a78a95e88b4496791254546a179cc039b6255fb1b4bb96877d95b532c2501c#rd)
 
 ![输入图片说明](images/1.png)
-- `Kafka`是最初由Linkedin公司开发，是一个分布式、支持分区的（partition）、多副本的（replica），基于zookeeper协调的**分布式消息系统**。官方文档：[https://kafka.apache.org/documentation/](https://kafka.apache.org/documentation/)关于Kafka的介绍，也可以参考我之前的文章：[Kafka原理介绍+安装+基本操作](https://www.cnblogs.com/liugp/p/16461885.html)
+- `Kafka`是最初由Linkedin公司开发，是一个分布式、支持分区的（partition）、多副本的（replica），基于zookeeper协调的**分布式消息系统**。官方文档：[https://kafka.apache.org/documentation/](https://kafka.apache.org/documentation/)关于Kafka的介绍，也可以参考我之前的文章：[Kafka原理介绍+安装+基本操作](https://mp.weixin.qq.com/s?__biz=MzI3MDM5NjgwNg==&mid=2247486178&idx=1&sn=a04a17a7d93a169f24937e99a207d7f6&chksm=ead0f60bdda77f1d8dd8ddd464cb1cd8544c645467e3d5e8216cd2657063a81403b88661f4c7#rd)
 
 ![输入图片说明](images/2.png)
 ## 二、Zookeeper on k8s 部署
@@ -22,8 +22,8 @@ tar -xf  zookeeper-10.2.1.tgz
 
 ```bash
 image:
-  registry: myharbor.com
-  repository: bigdata/zookeeper
+  registry: registry.cn-hangzhou.aliyuncs.com
+  repository: bigdata_cloudnative/zookeeper
   tag: 3.8.0-debian-11-r36
 ...
 
@@ -100,14 +100,21 @@ metadata:
   name: {{ .Values.persistence.storageClass }}
 provisioner: kubernetes.io/no-provisioner
 ```
+ - 设置时区，`zookeeper/templates/statefulset.yaml`
+ 
+```bash
+  env:
+    - name: TZ
+      value: Asia/Shanghai
+```
 
 ### 3）开始安装
 
 ```bash
 # 先准备好镜像
 docker pull docker.io/bitnami/zookeeper:3.8.0-debian-11-r36
-docker tag docker.io/bitnami/zookeeper:3.8.0-debian-11-r36 myharbor.com/bigdata/zookeeper:3.8.0-debian-11-r36
-docker push myharbor.com/bigdata/zookeeper:3.8.0-debian-11-r36
+docker tag docker.io/bitnami/zookeeper:3.8.0-debian-11-r36 registry.cn-hangzhou.aliyuncs.com/bigdata_cloudnative/zookeeper:3.8.0-debian-11-r36
+docker push registry.cn-hangzhou.aliyuncs.com/bigdata_cloudnative/zookeeper:3.8.0-debian-11-r36
 
 # 开始安装
 helm install zookeeper ./zookeeper -n zookeeper --create-namespace
@@ -203,8 +210,8 @@ tar -xf kafka-18.4.2.tgz
 
 ```bash
 image:
-  registry: myharbor.com
-  repository: bigdata/kafka
+  registry: registry.cn-hangzhou.aliyuncs.com
+  repository: bigdata_cloudnative/kafka
   tag: 3.2.1-debian-11-r16
 
 ...
@@ -254,14 +261,14 @@ metrics:
   kafka:
     enabled: true
     image:
-      registry: myharbor.com
-      repository: bigdata/kafka-exporter
+      registry: registry.cn-hangzhou.aliyuncs.com
+      repository: bigdata_cloudnative/kafka-exporter
       tag: 1.6.0-debian-11-r8
-    jmx:
-      enabled: true
-      image:
-      registry: myharbor.com
-      repository: bigdata/jmx-exporter
+  jmx:
+    enabled: true
+    image:
+      registry: registry.cn-hangzhou.aliyuncs.com
+      repository: bigdata_cloudnative/jmx-exporter
       tag: 0.17.1-debian-11-r1
       annotations:
         prometheus.io/path: "/metrics"
@@ -316,6 +323,13 @@ apiVersion: storage.k8s.io/v1
 metadata:
   name: {{ .Values.persistence.storageClass }}
 provisioner: kubernetes.io/no-provisioner
+```
+ - 设置时区，`kafka/templates/statefulset.yaml`
+ 
+```bash
+  env:
+    - name: TZ
+      value: Asia/Shanghai
 ```
 ### 3）开始安装
 ```bash
