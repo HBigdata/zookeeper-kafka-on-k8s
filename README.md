@@ -1,14 +1,13 @@
-[toc]
 ## 一、概述
 - `Apache ZooKeeper` 是一个集中式服务，用于维护配置信息、命名、提供分布式同步和提供组服务，ZooKeeper 致力于开发和维护一个开源服务器，以实现高度可靠的**分布式协调**，其实也可以认为就是一个**分布式数据库**，只是结构比较特殊，是树状结构。官网文档：[https://zookeeper.apache.org/doc/r3.8.0/](https://zookeeper.apache.org/doc/r3.8.0/)
 ，关于Zookeeper的介绍，也可以参考我之前的文章：[分布式开源协调服务——Zookeeper](https://www.cnblogs.com/liugp/p/16315924.html)
 
-![-](https://img-blog.csdnimg.cn/887e766642f34804a957221fcab5cb2b.png)
+![输入图片说明](images/1.png)
 - `Kafka`是最初由Linkedin公司开发，是一个分布式、支持分区的（partition）、多副本的（replica），基于zookeeper协调的**分布式消息系统**。官方文档：[https://kafka.apache.org/documentation/](https://kafka.apache.org/documentation/)关于Kafka的介绍，也可以参考我之前的文章：[Kafka原理介绍+安装+基本操作](https://www.cnblogs.com/liugp/p/16461885.html)
 
-![在这里插入图片描述](https://img-blog.csdnimg.cn/4527fcd42223471dac492d79529ac3ff.png)
+![输入图片说明](images/2.png)
 ## 二、Zookeeper on k8s 部署
-![在这里插入图片描述](https://img-blog.csdnimg.cn/7258c3eb40a745b6aedd15321b796988.png)
+![输入图片说明](images/3.png)
 
 ### 1）添加源
 部署包地址：[https://artifacthub.io/packages/helm/zookeeper/zookeeper](https://artifacthub.io/packages/helm/zookeeper/zookeeper)
@@ -145,13 +144,13 @@ To connect to your ZooKeeper server from outside the cluster execute the followi
     zkCli.sh $NODE_IP:$NODE_PORT
 
 ```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/30479eb908eb4634b072f6587ed000b1.png)
+![输入图片说明](images/4.png)
 查看pod状态
 
 ```bash
 kubectl get pods,svc -n zookeeper -owide
 ```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/2181a7ca877e4826bab9a5920c4ac11c.png)
+![输入图片说明](images/5.png)
 ### 4）测试验证
 ```bash
 # 登录zookeeper pod
@@ -161,10 +160,10 @@ kubectl exec -it zookeeper-2 -n zookeeper -- zkServer.sh status
 
 kubectl exec -it zookeeper-0 -n zookeeper -- bash
 ```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/a900b507fdb247afb8c6a6c27f07be91.png)
+![输入图片说明](images/6.png)
 ### 5）Prometheus监控
 Prometheus：[https://prometheus.k8s.local/targets?search=zookeeper](https://prometheus.k8s.local/targets?search=zookeeper)
-![在这里插入图片描述](https://img-blog.csdnimg.cn/fca6be42cec74f729cbaa42ffbb57c14.png)
+![输入图片说明](images/7.png)
 
 可以通过命令查看采集数据
 
@@ -181,7 +180,7 @@ kubectl get secret --namespace grafana grafana -o jsonpath="{.data.admin-passwor
 ```
 导入grafana模板，集群资源监控：`10465`
 官方模块下载地址：[https://grafana.com/grafana/dashboards/](https://grafana.com/grafana/dashboards/)
-![在这里插入图片描述](https://img-blog.csdnimg.cn/659b84647da347748e6a2161b01e6d62.png)
+![输入图片说明](images/8.png)
 
 ### 6）卸载
 ```bash
@@ -410,13 +409,13 @@ To connect to your Kafka server from outside the cluster, follow the instruction
         echo "$(kubectl get svc --namespace kafka -l "app.kubernetes.io/name=kafka,app.kubernetes.io/instance=kafka,app.kubernetes.io/component=kafka,pod" -o jsonpath='{.items[*].spec.ports[0].nodePort}' | tr ' ' '\n')"
 
 ```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/e35a70ec42b740beb10c3adde8828543.png)
+![输入图片说明](images/9.png)
 查看pod状态
 
 ```bash
 kubectl get pods,svc -n kafka -owide
 ```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/6813af4e697e45e9ba2c64f07ee865b6.png)
+![输入图片说明](images/10.png)
 ### 4）测试验证
 ```bash
 # 登录zookeeper pod
@@ -443,7 +442,7 @@ kafka-topics.sh --create --topic test001 --bootstrap-server kafka.kafka:9092 --p
 kafka-topics.sh --describe --bootstrap-server kafka.kafka:9092  --topic test001
 
 ```
-![在这里插入图片描述](https://img-blog.csdnimg.cn/3ca53c4d16824beda4229601c267c468.png)
+![输入图片说明](images/11.png)
 
 #### 2、查看Topic列表
 ```bash
@@ -477,7 +476,7 @@ kafka-topics.sh --delete --topic test001 --bootstrap-server kafka.kafka:9092
 ```
 ### 5）Prometheus监控
 Prometheus：[https://prometheus.k8s.local/targets?search=kafka](https://prometheus.k8s.local/targets?search=kafka)
-![在这里插入图片描述](https://img-blog.csdnimg.cn/ab87bc4d66494595a13d99f79dad3ca9.png)
+![输入图片说明](images/12.png)
 
 
 可以通过命令查看采集数据
@@ -502,4 +501,6 @@ kubectl delete pod -n kafka `kubectl get pod -n kafka|awk 'NR>1{print $1}'` --fo
 kubectl patch ns kafka  -p '{"metadata":{"finalizers":null}}'
 kubectl delete ns kafka  --force
 ```
-zookeeper + kafka on k8s 环境部署 就先到这里了，小伙伴有任何疑问，欢迎给我留言，后续会持续分享【云原生和大数据】相关的问题~
+zookeeper + kafka on k8s 环境部署 就先到这里了，小伙伴有任何疑问，欢迎给我留言，后续会持续分享【大数据与云原生技术分享】相关的问题~
+
+![输入图片说明](images/wx.png)
