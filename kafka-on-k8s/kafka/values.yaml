@@ -1729,6 +1729,6 @@ externalZookeeper:
   ## @param externalZookeeper.servers List of external zookeeper servers to use. Typically used in combination with 'zookeeperChrootPath'.
   ##
   servers:
-    - 192.168.182.110:31181
-    - 192.168.182.110:32181
-    - 192.168.182.110:33181
+    - zookeeper-0.zookeeper-headless.zookeeper
+    - zookeeper-1.zookeeper-headless.zookeeper
+    - zookeeper-2.zookeeper-headless.zookeeper
